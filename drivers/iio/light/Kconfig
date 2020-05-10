@@ -159,6 +159,17 @@ config CM36651
 	  To compile this driver as a module, choose M here:
 	  the module will be called cm36651.
 
+config CM36652
+	depends on I2C
+	tristate "CM36652 driver"
+	help
+	  Say Y here if you use cm36652.
+	  This option enables proximity & RGB sensor using
+	  Capella cm36652 device driver.
+
+	  To compile this driver as a module, choose M here:
+	  the module will be called cm36652.
+
 config IIO_CROS_EC_LIGHT_PROX
 	tristate "ChromeOS EC Light and Proximity Sensors"
 	depends on IIO_CROS_EC_SENSORS_CORE

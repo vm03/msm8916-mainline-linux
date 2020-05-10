@@ -168,6 +168,20 @@
 			pinctrl-0 = <&nfc_default>;
 		};
 	};
+
+	reg_proximity_vled: regulator-proximity-vled {
+		compatible = "regulator-fixed";
+		regulator-name = "proximity_led";
+		regulator-min-microvolt = <3000000>;
+		regulator-max-microvolt = <3000000>;
+
+		gpio = <&msmgpio 8 0>;
+		enable-active-high;
+
+		pinctrl-names = "default";
+//		pinctrl-0 = <&FIXME>;
+	};
+
 };
 
 &blsp_i2c1 {
@@ -202,6 +216,16 @@
 
 		vdd-supply = <&pm8916_l17>;
 		vddio-supply = <&pm8916_l5>;
+	};
+
+	cm36652@60 {
+		compatible = "capella,cm36652";
+		reg = <0x60>;
+		interrupt-parent = <&msmgpio>;
+		interrupts = <113 IRQ_TYPE_EDGE_FALLING>;
+		vdd-supply = <&pm8916_l17>;
+		vddio-supply = <&pm8916_l5>;
+		vled-supply = <&reg_proximity_vled>;
 	};
 };
 
