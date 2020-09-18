@@ -40,7 +40,7 @@
 #define IMX219_CHIP_ID			0x0219
 
 /* External clock frequency is 24.0M */
-#define IMX219_XCLK_FREQ		24000000
+#define IMX219_XCLK_FREQ		23880000
 
 /* Pixel rate is fixed at 182.4M for all the modes */
 #define IMX219_PIXEL_RATE		182400000
@@ -1445,9 +1445,22 @@ static int imx219_probe(struct i2c_client *client)
 
 	imx219->xclk_freq = clk_get_rate(imx219->xclk);
 	if (imx219->xclk_freq != IMX219_XCLK_FREQ) {
-		dev_err(dev, "xclk frequency not supported: %d Hz\n",
+		/* Attempt to change the frequency */
+		printk("XXX - imx219->xclk_freq: %d", imx219->xclk_freq);
+		ret = clk_set_rate(imx219->xclk, IMX219_XCLK_FREQ);
+		if (ret) {
+			dev_err(dev, "could not set xclk frequency\n");
+
+			dev_err(dev, "xclk frequency not supported: %d Hz\n",
 			imx219->xclk_freq);
-		return -EINVAL;
+
+			return ret;
+		}
+
+		imx219->xclk_freq = clk_get_rate(imx219->xclk);
+		printk("XXX - now: imx219->xclk_freq: %d\n", imx219->xclk_freq);
+
+
 	}
 
 	ret = imx219_get_regulators(imx219);
