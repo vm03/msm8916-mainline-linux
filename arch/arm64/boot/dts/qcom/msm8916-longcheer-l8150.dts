@@ -83,7 +83,7 @@
 		 * order of SoC and if device will be powered on with adapter attached
 		 * and powered, it will boot into USB BOOT mode.
 		 */
-		id-gpios = <&msmgpio 37 GPIO_ACTIVE_LOW>;
+		id-gpio = <&msmgpio 37 GPIO_ACTIVE_LOW>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&usb_id_default>;
 	};
