@@ -343,8 +343,8 @@
 	pinctrl-0 = <&cdc_pdm_lines_act>;
 	pinctrl-1 = <&cdc_pdm_lines_sus>;
 
-	qcom,model = "msm8916";
-	qcom,audio-routing =
+	model = "msm8916";
+	audio-routing =
 		"AMIC1", "MIC BIAS External1",
 		"AMIC2", "MIC BIAS Internal2",
 		"AMIC3", "MIC BIAS External1";
