@@ -1537,6 +1537,8 @@ static int imx219_probe(struct i2c_client *client)
 	pm_runtime_enable(dev);
 	pm_runtime_idle(dev);
 
+	printk("XXX - imx219: loaded \\o/ \n");
+
 	return 0;
 
 error_media_entity:

@@ -61,6 +61,7 @@
 
 		clocks = <&gcc GCC_CAMSS_MCLK0_CLK>;
 
+		pinctrl-names = "default";
 		pinctrl-0 = <&imx219_default>, <&imx219_reset_default>;
 
 		port {
@@ -72,6 +73,26 @@
 			};
 		};
 	};
+};
+
+&soc {
+	i2c-af {
+		compatible = "i2c-gpio";
+		sda-gpios = <&msmgpio 31 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN)>;
+		scl-gpios = <&msmgpio 32 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN)>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+/*		autofocus: af@0c {
+
+		};
+*/
+	};
+};
+
+&blsp_i2c3 {
+	status = "okay";
 };
 
 &dsi0 {
