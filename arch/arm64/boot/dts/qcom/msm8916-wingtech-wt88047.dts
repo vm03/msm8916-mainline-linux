@@ -23,6 +23,14 @@
 		stdout-path = "serial0";
 	};
 
+	reserved-memory {
+		mpss_mem: gps_mem: mpss@86800000 {
+			status = "disabled";
+			reg = <0x0 0x86800000 0x0 0x5100000>;
+			no-map;
+		};
+	};
+
 	speaker_amp: audio-amplifier {
 		compatible = "simple-audio-amplifier";
 
