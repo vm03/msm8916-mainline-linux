@@ -98,6 +98,42 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&lcd_n_en_default>;
 	};
+
+	camss_avdd: camss-avdd {
+		compatible = "regulator-fixed";
+		regulator-name = "camss-avdd";
+		regulator-min-microvolt = <2800000>;
+		regulator-max-microvolt = <2800000>;
+		gpio = <&msmgpio 38 0>;
+		enable-active-high;
+		regulator-always-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&camss_avdd_en_default>;
+	};
+
+	camss_dovdd: camss-dovdd {
+		compatible = "regulator-fixed";
+		regulator-name = "camss-dovdd";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		gpio = <&msmgpio 60 0>;
+		enable-active-high;
+		regulator-always-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&camss_dovdd_en_default>;
+	};
+
+	camss_dvdd: camss_dvdd {
+		compatible = "regulator-fixed";
+		regulator-name = "camss-dvdd";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+		gpio = <&msmgpio 56 0>;
+		enable-active-high;
+		regulator-always-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&camss_dvdd_en_default>;
+	};
 };
 
 &blsp_i2c1 {
@@ -217,6 +253,49 @@
 
 &lpass {
 	status = "okay";
+};
+
+&cci {
+	status = "okay";
+};
+
+&cci_i2c0 {
+	ov5695@10 {
+		compatible = "ovti,ov5695";
+		reg = <0x10>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ov5695_pwdn_default>, <&ov5695_mclk_default>;
+
+		clocks = <&gcc GCC_CAMSS_MCLK1_CLK>;
+		clock-names = "xvclk";
+
+		avdd-supply = <&camss_avdd>;
+		dovdd-supply = <&camss_dovdd>;
+		dvdd-supply = <&camss_dvdd>;
+		reset-gpios = <&msmgpio 28 GPIO_ACTIVE_LOW>;
+
+		port {
+			ov5695_ep: endpoint {
+				remote-endpoint = <&csiphy0_ep>;
+				data-lanes = <1 2>;
+			};
+		};
+	};
+};
+
+&camss {
+	status = "okay";
+
+	ports {
+		port@0 {
+			reg = <0>;
+			csiphy0_ep: endpoint {
+				clock_lanes = <1>;
+				data-lanes = <0 2>;
+				remote-endpoint = <&ov5695_ep>;
+			};
+		};
+	};
 };
 
 &pm8916_resin {
@@ -430,6 +509,30 @@
 		bias-pull-up;
 	};
 
+	camss_avdd_en_default: camss_avdd_en_default {
+		pins = "gpio38";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	camss_dovdd_en_default: camss_dovdd_en_default {
+		pins = "gpio60";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	camss_dvdd_en_default: camss_dvdd_en_default {
+		pins = "gpio56";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
 	gpio_keys_default: gpio-keys-default {
 		pins = "gpio107";
 		function = "gpio";
@@ -495,6 +598,23 @@
 			drive-strength = <2>;
 			bias-pull-down;
 		};
+	};
+
+	ov5695_mclk_default: ov5695_mclk_default {
+		pins = "gpio27";
+		function = "cam_mclk1";
+
+		drive-strength = <16>;
+		bias-disable;
+	};
+
+	ov5695_pwdn_default: ov5695_pwdn_default {
+		pins = "gpio33";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+		output-low;
 	};
 
 	sdc2_cd: sdc2-cd-default {
