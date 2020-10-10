@@ -147,6 +147,8 @@
 		rmi4-f11@11 {
 			reg = <0x11>;
 			syna,sensor-type = <1>; // Touchscreen
+			syna,clip-x-high = <1100>;
+			syna,clip-y-high = <1770>;
 		};
 	};
 };
