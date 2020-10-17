@@ -44,6 +44,26 @@
 	};
 };
 
+&blsp_i2c2 {
+	status = "okay";
+
+	accelerometer@11 {
+		compatible = "bosch,bmc150_accel";
+		reg = <0x11>;
+
+		vdd-supply = <&pm8916_l17>;
+		vddio-supply = <&pm8916_l6>;
+	};
+
+	magnetometer@13 {
+		compatible = "bosch,bmc150_magn";
+		reg = <0x13>;
+
+		vdd-supply = <&pm8916_l17>;
+		vddio-supply = <&pm8916_l6>;
+	};
+};
+
 &blsp1_uart2 {
 	status = "okay";
 };
