@@ -5,6 +5,7 @@
 #include "msm8916-pm8916.dtsi"
 #include "msm8916-no-psci.dtsi"
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
 #include <dt-bindings/sound/apq8016-lpass.h>
 
 / {
@@ -52,16 +53,32 @@
 		compatible = "bosch,bmc150_accel";
 		reg = <0x11>;
 
+		interrupt-parent = <&msmgpio>;
+		interrupts = <115 IRQ_TYPE_EDGE_RISING>;
+
+		mount-matrix =	 "0", "1", "0",
+				"-1", "0", "0",
+				 "0", "0", "1";
+
 		vdd-supply = <&pm8916_l17>;
 		vddio-supply = <&pm8916_l6>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&accel_int_default>;
 	};
 
 	magnetometer@13 {
 		compatible = "bosch,bmc150_magn";
 		reg = <0x13>;
 
+		interrupt-parent = <&msmgpio>;
+		interrupts = <69 IRQ_TYPE_EDGE_RISING>;
+
 		vdd-supply = <&pm8916_l17>;
 		vddio-supply = <&pm8916_l6>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&magn_int_default>;
 	};
 };
 
@@ -287,12 +304,28 @@
 };
 
 &msmgpio {
+	accel_int_default: accel_int_default {
+		pins = "gpio115";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
 	gpio_keys_default: gpio-keys-default {
 		pins = "gpio107", "gpio108";
 		function = "gpio";
 
 		drive-strength = <2>;
 		bias-pull-up;
+	};
+
+	magn_int_default: magn_int_default {
+		pins = "gpio69";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
 	};
 
 	touchscreen_default: touchscreen-default {
