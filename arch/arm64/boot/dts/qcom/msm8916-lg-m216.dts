@@ -19,6 +19,20 @@
 		stdout-path = "serial0";
 	};
 
+	reserved-memory {
+		mpss_mem: mpss@86800000 {
+			status = "disabled";
+			reg = <0x0 0x86800000 0x0 0x4a00000>;
+			no-map;
+		};
+
+		gps_mem: gps@8b200000 {
+			status = "disabled";
+			reg = <0x0 0x8b200000 0x0 0x200000>;
+			no-map;
+		};
+	};
+
 	gpio-keys {
 		compatible = "gpio-keys";
 
