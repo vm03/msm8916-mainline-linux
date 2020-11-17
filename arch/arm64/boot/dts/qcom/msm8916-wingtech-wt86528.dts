@@ -100,28 +100,6 @@
 		};
 	};
 
-	reg_lcd_pos: regulator-lcd-pos {
-		compatible = "regulator-fixed";
-		regulator-name = "lcd-pos";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		gpio = <&msmgpio 118 GPIO_ACTIVE_HIGH>;
-		regulator-boot-on;
-		enable-active-high;
-		startup-delay-us = <800>;
-	};
-
-	reg_lcd_neg: regulator-lcd-neg {
-		compatible = "regulator-fixed";
-		regulator-name = "lcd-neg";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		gpio = <&msmgpio 117 GPIO_ACTIVE_HIGH>;
-		regulator-boot-on;
-		enable-active-high;
-		startup-delay-us = <800>;
-	};
-
 	usb_id: usb-id {
 		compatible = "linux,extcon-usb-gpio";
 		id-gpios = <&msmgpio 110 GPIO_ACTIVE_HIGH>;
@@ -157,6 +135,30 @@
 
 		vdd-supply = <&pm8916_l17>;
 		vid-supply = <&pm8916_l6>;
+	};
+
+	tps65132@3e {
+		compatible = "ti,tps65132";
+		reg = <0x3e>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&tps65132_en_default>;
+
+		reg_lcd_pos: outp {
+			regulator-name = "outp";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			enable-gpios = <&msmgpio 118 GPIO_ACTIVE_HIGH>;
+			regulator-active-discharge = <1>;
+		};
+
+		reg_lcd_neg: outn {
+			regulator-name = "outn";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			enable-gpios = <&msmgpio 117 GPIO_ACTIVE_HIGH>;
+			regulator-active-discharge = <1>;
+		};
 	};
 };
 
@@ -499,6 +501,14 @@
 			drive-strength = <2>;
 			bias-disable;
 		};
+	};
+
+	tps65132_en_default: tps65132-en-default {
+		pins = "gpio117", "gpio118";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
 	};
 
 	usb_id_default: usb-id-default {
