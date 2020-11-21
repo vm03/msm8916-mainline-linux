@@ -1443,12 +1443,25 @@ static int imx219_probe(struct i2c_client *client)
 		return PTR_ERR(imx219->xclk);
 	}
 
-	imx219->xclk_freq = clk_get_rate(imx219->xclk);
-	if (imx219->xclk_freq != IMX219_XCLK_FREQ) {
+	ret = fwnode_property_read_u32(dev_fwnode(dev), "clock-frequency", &imx219->xclk_freq);
+	if (ret) {
+		dev_err(dev, "could not get xclk frequency\n");
+		return ret;
+	}
+
+	/* this driver currently expects 24MHz; allow 1% tolerance */
+	if (imx219->xclk_freq < 23760000 || imx219->xclk_freq > 24240000) {
 		dev_err(dev, "xclk frequency not supported: %d Hz\n",
 			imx219->xclk_freq);
 		return -EINVAL;
 	}
+
+	ret = clk_set_rate(imx219->xclk, imx219->xclk_freq);
+	if (ret) {
+		dev_err(dev, "could not set xclk frequency\n");
+		return ret;
+	}
+
 
 	ret = imx219_get_regulators(imx219);
 	if (ret) {
