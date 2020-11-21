@@ -230,6 +230,27 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&pmic_int_default>;
+
+		regulators {
+			safe_ldo: SAFE_LDO {
+				regulator-name = "SAFE_LDO";
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <4950000>;
+				regulator-always-on;
+			};
+
+			cam_sensor_a2_8V: LDO {
+				regulator-name = "LDO";
+				regulator-min-microvolt = <2800000>;
+				regulator-max-microvolt = <2800000>;
+			};
+
+			cam_sensor_core_1_2V: BUCK {
+				regulator-name = "BUCK";
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <1200000>;
+			};
+		};
 	};
 };
 

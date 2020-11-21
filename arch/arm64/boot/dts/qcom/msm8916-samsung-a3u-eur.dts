@@ -76,6 +76,54 @@
 	};
 };
 
+&camss {
+	status = "okay";
+
+	ports {
+		port@0 {
+			reg = <0>;
+			csiphy0_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 2>;
+				remote-endpoint = <&imx219_ep>;
+			};
+		};
+	};
+};
+
+&cci {
+	status = "okay";
+};
+
+&cci_i2c0 {
+	imx219@1a {
+		reg = <0x1a>;
+
+		compatible = "sony,imx219";
+
+		VANA-supply = <&cam_sensor_a2_8V>;
+		VDIG-supply = <&pm8916_l16>;
+		VDDL-supply = <&cam_sensor_core_1_2V>;
+
+		reset-gpios = <&msmgpio 35 GPIO_ACTIVE_HIGH>;
+
+		clocks = <&gcc GCC_CAMSS_MCLK0_CLK>;
+		clock-frequency = <23880000>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&imx219_default>, <&imx219_reset_default>;
+
+		port {
+			imx219_ep: endpoint {
+				data-lanes = <1 2>;
+				remote-endpoint = <&csiphy0_ep>;
+				clock-noncontinuous;
+				link-frequencies = /bits/ 64 <456000000>;
+			};
+		};
+	};
+};
+
 &dsi0 {
 	panel@0 {
 		reg = <0>;
@@ -100,6 +148,30 @@
 };
 
 &msmgpio {
+	imx219_default: imx219_default {
+		pinmux {
+			function = "cam_mclk0";
+			pins = "gpio26";
+		};
+		pinconf {
+			pins = "gpio26";
+			drive-strength = <16>;
+			bias-disable;
+		};
+	};
+
+	imx219_reset_default: imx219_reset_default {
+		pinmux {
+			function = "gpio";
+			pins = "gpio35";
+		};
+		pinconf {
+			pins = "gpio35";
+			drive-strength = <16>;
+			bias-disable;
+		};
+	};
+
 	panel_vdd3_default: panel-vdd3-default {
 		pins = "gpio9";
 		function = "gpio";
