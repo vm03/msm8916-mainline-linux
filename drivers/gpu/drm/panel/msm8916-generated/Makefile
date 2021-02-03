@@ -4,6 +4,7 @@ obj-$(CONFIG_DRM_PANEL_MSM8916_GENERATED) += panel-asus-z010d-r69339.o
 obj-$(CONFIG_DRM_PANEL_MSM8916_GENERATED) += panel-longcheer-booyi-otm1287.o
 obj-$(CONFIG_DRM_PANEL_MSM8916_GENERATED) += panel-longcheer-truly-otm1288a.o
 obj-$(CONFIG_DRM_PANEL_MSM8916_GENERATED) += panel-longcheer-yushun-nt35520.o
+obj-$(CONFIG_DRM_PANEL_MSM8916_GENERATED) += panel-motorola-harpia-boe.o
 obj-$(CONFIG_DRM_PANEL_MSM8916_GENERATED) += panel-motorola-harpia-tianma.o
 obj-$(CONFIG_DRM_PANEL_MSM8916_GENERATED) += panel-motorola-osprey-inx.o
 obj-$(CONFIG_DRM_PANEL_MSM8916_GENERATED) += panel-motorola-surnia-boe.o
