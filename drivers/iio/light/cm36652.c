@@ -179,17 +179,10 @@ irqreturn_t cm36652_irq_handler(int irq, void *data)
 	struct iio_dev *iio_dev = data;
 	struct cm36652_data *cm36652 = iio_priv(iio_dev);
 	struct i2c_client *client = cm36652->client;
-	int ps_data = 0;
 	int int_flag = 0;
 	int ev_dir;
 	u64 ev_code;
 	int ret;
-
-	ret = regmap_read(cm36652->regmap, REG_PS_DATA, &ps_data);
-	if (ret < 0) {
-		dev_err(&client->dev, "irq: failed to read proximity sensor data: %d\n", ret);
-		return ret;
-	}
 
 	ret = regmap_read(cm36652->regmap, REG_INT_FLAG, &int_flag); // the act of reading this register out acks the interrupt
 	if (ret < 0) {
@@ -197,14 +190,15 @@ irqreturn_t cm36652_irq_handler(int irq, void *data)
 		return ret;
 	}
 
-	dev_info(&client->dev, "--- INT --- ps: %d, int: %x\n", ps_data, int_flag);
-
-	if (int_flag & REG_INT_PS_AWAY)
+	if (int_flag & REG_INT_PS_AWAY) {
 		ev_dir = IIO_EV_DIR_FALLING;
-	else if (int_flag & REG_INT_PS_CLOSE)
+	} else if (int_flag & REG_INT_PS_CLOSE) {
 		ev_dir = IIO_EV_DIR_RISING;
-	else
+	} else {
 		dev_err(&client->dev, "irq: unknown interrupt reason; flags: 0x%2x\n", int_flag<<8);
+
+		return IRQ_HANDLED;
+	}
 
 	ev_code = IIO_UNMOD_EVENT_CODE(IIO_PROXIMITY,
 				       CM36652_CMD_READ_RAW_PROXIMITY,
