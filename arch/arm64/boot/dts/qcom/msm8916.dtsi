@@ -1259,6 +1259,41 @@
 				reg = <0x5000 0x1000>;
 				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
 			};
+
+			// periph_BLSP: (doesn't work properly for some reason?)
+			iommu-ctx@19000 {
+				compatible = "qcom,msm-iommu-v1-ns";
+				reg = <0x19000 0x1000>;
+				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+			// periph_SDC1:
+			iommu-ctx@1a000 {
+				compatible = "qcom,msm-iommu-v1-ns";
+				reg = <0x1a000 0x1000>;
+				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+			// periph_SDC2:
+			iommu-ctx@1b000 {
+				compatible = "qcom,msm-iommu-v1-ns";
+				reg = <0x1b000 0x1000>;
+				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+			// periph_audio:
+			iommu-ctx@1c000 {
+				compatible = "qcom,msm-iommu-v1-ns";
+				reg = <0x1c000 0x1000>;
+				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+			// periph_USB_HS1:
+			iommu-ctx@1d000 {
+				compatible = "qcom,msm-iommu-v1-ns";
+				reg = <0x1d000 0x1000>;
+				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+			};
 		};
 
 		gpu_iommu: iommu@1f08000 {
@@ -1514,6 +1549,7 @@
 			interrupt-names = "lpass-irq-lpaif";
 			reg = <0x07708000 0x10000>;
 			reg-names = "lpass-lpaif";
+			iommus = <&apps_iommu 0x1c>;
 
 			#address-cells = <1>;
 			#size-cells = <0>;
@@ -1532,6 +1568,7 @@
 			compatible = "qcom,sdhci-msm-v4";
 			reg = <0x07824900 0x11c>, <0x07824000 0x800>;
 			reg-names = "hc_mem", "core_mem";
+			iommus = <&apps_iommu 0x1a>;
 
 			interrupts = <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>,
 				     <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
@@ -1550,6 +1587,7 @@
 			compatible = "qcom,sdhci-msm-v4";
 			reg = <0x07864900 0x11c>, <0x07864000 0x800>;
 			reg-names = "hc_mem", "core_mem";
+			iommus = <&apps_iommu 0x1b>;
 
 			interrupts = <GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
 				     <GIC_SPI 221 IRQ_TYPE_LEVEL_HIGH>;
@@ -1816,6 +1854,7 @@
 			phys = <&usb_hs_phy>;
 			status = "disabled";
 			#reset-cells = <1>;
+			iommus = <&apps_iommu 0x1d>;
 
 			ulpi {
 				usb_hs_phy: phy {
