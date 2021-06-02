@@ -1,0 +1,9 @@
+                                                               _______________________
+                                                              | stripped lines of code
+                                                              |              _____________________________
+                                                              |             | headers included recursively
+                                                              |             |                _______________________________
+                                                              |             |               | usage in a distro kernel build
+ ____________                                                 |             |               |         _________________________________________
+| header name                                                 |             |               |        | million lines of comment-stripped C code
+|                                                             |             |               |        |
