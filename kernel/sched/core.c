@@ -76,6 +76,7 @@ DEFINE_PER_TASK(struct task_group *,			sched_task_group);
 #ifdef CONFIG_SCHED_CORE
 DEFINE_PER_TASK(struct rb_node,				core_node);
 DEFINE_PER_TASK(unsigned long,				core_cookie);
+DEFINE_PER_TASK(unsigned int,				core_occupation);
 #endif
 
 /*
@@ -5894,7 +5895,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		if (!(fi_before && rq->core->core_forceidle))
 			task_vruntime_update(rq_i, rq_i->core_pick, rq->core->core_forceidle);
 
-		rq_i->core_pick->core_occupation = occ;
+		per_task(rq_i->core_pick, core_occupation) = occ;
 
 		if (i == cpu) {
 			rq_i->core_pick = NULL;
@@ -5945,7 +5946,7 @@ static bool try_steal_cookie(int this, int that)
 		if (!cpumask_test_cpu(this, &p->cpus_mask))
 			goto next;
 
-		if (p->core_occupation > dst->idle->core_occupation)
+		if (per_task(p, core_occupation) > per_task(dst->idle, core_occupation))
 			goto next;
 
 		deactivate_task(src, p, 0);
