@@ -69,7 +69,6 @@ struct task_struct init_task
 	__aligned(L1_CACHE_BYTES)
 = {
 	.__state	= 0,
-	.flags		= PF_KTHREAD,
 	.prio		= MAX_PRIO - 20,
 	.static_prio	= MAX_PRIO - 20,
 	.normal_prio	= MAX_PRIO - 20,

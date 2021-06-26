@@ -388,7 +388,6 @@ struct task_struct {
 	randomized_struct_fields_start
 
 	/* Per task flags (PF_*), defined further below: */
-	unsigned int			flags;
 	unsigned int			ptrace;
 
 #ifdef CONFIG_SMP

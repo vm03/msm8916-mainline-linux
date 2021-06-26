@@ -29,6 +29,8 @@
 #include "pelt.h"
 #include "smp.h"
 
+DEFINE_PER_TASK(unsigned int,				flags);
+
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 DEFINE_PER_TASK(struct thread_info, ti);
 #endif
