@@ -4,6 +4,7 @@
  * Copyright (c) 2020, Stephan Gerhold <stephan@gerhold.net>
  */
 
+#define DEBUG
 #include <linux/atomic.h>
 #include <linux/bitops.h>
 #include <linux/completion.h>
@@ -22,7 +23,7 @@
 #include <linux/workqueue.h>
 #include <net/pkt_sched.h>
 
-#define BAM_DMUX_BUFFER_SIZE		SZ_2K
+#define BAM_DMUX_BUFFER_SIZE		SZ_4K
 #define BAM_DMUX_HDR_SIZE		sizeof(struct bam_dmux_hdr)
 #define BAM_DMUX_MAX_DATA_SIZE		(BAM_DMUX_BUFFER_SIZE - BAM_DMUX_HDR_SIZE)
 #define BAM_DMUX_NUM_SKB		32
@@ -31,6 +32,11 @@
 
 #define BAM_DMUX_AUTOSUSPEND_DELAY	1000
 #define BAM_DMUX_REMOTE_TIMEOUT		msecs_to_jiffies(2000)
+
+#define DYNAMIC_MTU_MASK			0x2
+#define MTU_SIZE_MASK				0xc0
+#define MTU_SIZE_SHIFT				0x6
+#define DL_POOL_SIZE_SHIFT			0x4
 
 enum {
 	BAM_DMUX_CMD_DATA,
@@ -243,6 +249,8 @@ static int bam_dmux_send_cmd(struct bam_dmux_netdev *bndev, u8 cmd)
 	hdr->magic = BAM_DMUX_HDR_MAGIC;
 	hdr->cmd = cmd;
 	hdr->ch = bndev->ch;
+	if (cmd == BAM_DMUX_CMD_OPEN)
+		hdr->signal = DYNAMIC_MTU_MASK | (1 << MTU_SIZE_SHIFT);
 
 	skb_dma = bam_dmux_tx_queue(dmux, skb);
 	if (!skb_dma) {
@@ -543,7 +551,7 @@ static void bam_dmux_cmd_open(struct bam_dmux *dmux, struct bam_dmux_hdr *hdr)
 {
 	struct net_device *netdev = dmux->netdevs[hdr->ch];
 
-	dev_dbg(dmux->dev, "open channel: %u\n", hdr->ch);
+	dev_dbg(dmux->dev, "open channel: %u (signal: %#x)\n", hdr->ch, hdr->signal);
 
 	if (__test_and_set_bit(hdr->ch, dmux->remote_channels)) {
 		dev_warn(dmux->dev, "Channel already open: %u\n", hdr->ch);
