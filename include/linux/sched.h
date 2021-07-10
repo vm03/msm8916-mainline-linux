@@ -24,7 +24,6 @@
 #include <linux/sched/types.h>
 #include <linux/syscall_user_dispatch.h>
 #include <linux/task_io_accounting.h>
-#include <linux/rseq.h>
 #include <linux/smp_types.h>
 
 #include <asm/kmap_size.h>
