@@ -68,9 +68,6 @@ struct task_struct init_task
 #endif
 	__aligned(L1_CACHE_BYTES)
 = {
-#ifdef CONFIG_THREAD_INFO_IN_TASK
-	.stack_refcount	= REFCOUNT_INIT(1),
-#endif
 	.__state	= 0,
 	.flags		= PF_KTHREAD,
 	.prio		= MAX_PRIO - 20,
