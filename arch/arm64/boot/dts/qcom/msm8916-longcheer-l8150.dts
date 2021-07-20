@@ -133,10 +133,20 @@
 		pinctrl-0 = <&ctp_pwr_en_default>;
 	};
 
+	flash_pwm: flash-pwm {
+		compatible = "clk-pwm";
+		#pwm-cells = <2>;
+
+		clocks = <&gcc GCC_CAMSS_GP1_CLK>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&pwm_clk_flash_default>;
+	};
+
 	flash-led-controller {
-		compatible = "sgmicro,sgm3140";
+		compatible = "sgmicro,sgm3785";
 		flash-gpios = <&msmgpio 31 GPIO_ACTIVE_HIGH>;
-		enable-gpios = <&msmgpio 32 GPIO_ACTIVE_HIGH>;
+		pwms = <&flash_pwm 0 1000000>;
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&camera_flash_default>;
@@ -512,7 +522,7 @@
 	};
 
 	camera_flash_default: camera-flash-default {
-		pins = "gpio31", "gpio32";
+		pins = "gpio31";
 		function = "gpio";
 
 		drive-strength = <2>;
@@ -566,6 +576,11 @@
 			drive-strength = <2>;
 			bias-pull-down;
 		};
+	};
+
+	pwm_clk_flash_default: pwm-clk-flash-default {
+		pins = "gpio32";
+		function = "flash_strobe";
 	};
 
 	tp_int_default: tp-int-default {
