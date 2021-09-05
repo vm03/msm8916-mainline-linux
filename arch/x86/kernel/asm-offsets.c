@@ -6,6 +6,8 @@
  */
 #define COMPILE_OFFSETS
 
+#include "../../../kernel/sched/per_task_area_struct.h"
+
 #include <linux/crypto.h>
 #include <linux/sched.h>
 #include <linux/stddef.h>
@@ -31,6 +33,8 @@
 
 static void __used common(void)
 {
+#include "../../../kernel/sched/per_task_area_struct_defs.h"
+
 	BLANK();
 	OFFSET(TASK_threadsp, task_struct, thread.sp);
 #ifdef CONFIG_STACKPROTECTOR
