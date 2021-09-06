@@ -26,8 +26,6 @@
 #include <linux/task_io_accounting.h>
 #include <linux/smp_types.h>
 
-#include <asm/kmap_size.h>
-
 #ifdef CONFIG_LOCKDEP
 # include <linux/lockdep.h>
 #endif
