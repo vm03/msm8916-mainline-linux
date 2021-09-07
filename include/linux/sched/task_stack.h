@@ -10,6 +10,7 @@
 #include <asm/page.h>
 #include <linux/sched.h>
 #include <linux/magic.h>
+#include <linux/refcount.h>
 #include <linux/sched/thread.h>
 
 #ifdef CONFIG_VMAP_STACK
