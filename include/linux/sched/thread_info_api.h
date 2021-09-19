@@ -3,7 +3,6 @@
 #define _LINUX_SCHED_THREAD_INFO_API_H
 
 #include <linux/sched.h>
-#include <linux/sched/thread_info_api_lowlevel.h>
 #include <linux/sched/thread.h>
 #include <linux/thread_info.h>
 
