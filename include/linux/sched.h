@@ -29,7 +29,6 @@
 #include <linux/rseq.h>
 #include <linux/kcsan.h>
 #include <linux/smp_types.h>
-#include <linux/restart_block_types.h>
 
 #include <asm/kmap_size.h>
 
