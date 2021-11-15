@@ -1133,6 +1133,4 @@ extern char *__get_task_comm(char *to, size_t len, struct task_struct *tsk);
 extern bool sched_task_on_rq(struct task_struct *p);
 extern unsigned long get_wchan(struct task_struct *p);
 
-#include <linux/sched/cond_resched.h>
-
 #endif
