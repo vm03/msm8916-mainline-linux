@@ -15,6 +15,19 @@
 #include <linux/errno.h>
 #include <linux/bitops.h>
 
+#ifdef CONFIG_THREAD_INFO_IN_TASK
+/* We are racing with <linux/sched/thread_info.h> to do this: */
+# ifndef current_thread_info
+  /*
+   * For CONFIG_THREAD_INFO_IN_TASK kernels we need <asm/current.h> for the
+   * definition of current, but for !CONFIG_THREAD_INFO_IN_TASK kernels,
+   * including <asm/current.h> can cause a circular dependency on some platforms.
+   */
+# include <asm/current.h>
+# define current_thread_info() task_thread_info(current)
+# endif
+#endif
+
 /*
  * For per-arch arch_within_stack_frames() implementations, defined in
  * asm/thread_info.h.
@@ -47,6 +60,8 @@ enum syscall_work_bit {
 #endif
 
 #include <asm/thread_info.h>
+
+#include <linux/sched/thread_info_api_lowlevel.h>
 
 #ifdef __KERNEL__
 
