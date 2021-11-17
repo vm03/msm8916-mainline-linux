@@ -3,6 +3,7 @@
 #define __ASM_PREEMPT_H
 
 #include <linux/thread_info.h>
+#include <linux/sched/thread_info_api.h>
 
 #define PREEMPT_NEED_RESCHED	BIT(32)
 #define PREEMPT_ENABLED	(PREEMPT_NEED_RESCHED)

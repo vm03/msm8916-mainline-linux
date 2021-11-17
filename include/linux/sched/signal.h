@@ -8,6 +8,7 @@
 #include <linux/sched.h>
 #include <linux/sched/jobctl.h>
 #include <linux/sched/task.h>
+#include <linux/sched/thread_info_api.h>
 #include <linux/cred.h>
 #include <linux/refcount.h>
 #include <linux/posix-timers.h>
