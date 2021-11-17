@@ -4,7 +4,7 @@
 
 #include <linux/sched.h>
 #include <linux/sched/thread_info_api_lowlevel.h>
-#include <linux/sched/per_task.h>
+#include <linux/sched/thread.h>
 
 union thread_union {
 #ifndef CONFIG_ARCH_TASK_STRUCT_ON_STACK

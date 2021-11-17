@@ -673,7 +673,6 @@ struct task_struct {
 	 */
 	randomized_struct_fields_start
 
-	void				*stack;
 	refcount_t			usage;
 	/* Per task flags (PF_*), defined further below: */
 	unsigned int			flags;

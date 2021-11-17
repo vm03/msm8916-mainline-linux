@@ -53,7 +53,7 @@ int main(void)
   DEFINE(TSK_TI_SCS_BASE,	TI_BASE + offsetof(struct thread_info, scs_base));
   DEFINE(TSK_TI_SCS_SP,		TI_BASE + offsetof(struct thread_info, scs_sp));
 #endif
-  DEFINE(TSK_STACK,		offsetof(struct task_struct, stack));
+  DEFINE(TSK_STACK,		TSK_PER_TASK_BASE + offsetof(struct task_struct_per_task, stack));
 #ifdef CONFIG_STACKPROTECTOR
   DEFINE(TSK_STACK_CANARY,	offsetof(struct task_struct, stack_canary));
 #endif
