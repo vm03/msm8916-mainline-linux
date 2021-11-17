@@ -654,13 +654,6 @@ struct kmap_ctrl {
 };
 
 struct task_struct {
-#ifdef CONFIG_THREAD_INFO_IN_TASK
-	/*
-	 * For reasons of header soup (see current_thread_info()), this
-	 * must be the first element of task_struct.
-	 */
-	struct thread_info		thread_info;
-#endif
 	unsigned int			__state;
 
 #ifdef CONFIG_PREEMPT_RT

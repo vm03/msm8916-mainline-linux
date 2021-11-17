@@ -29,6 +29,10 @@
 #include "pelt.h"
 #include "smp.h"
 
+#ifdef CONFIG_THREAD_INFO_IN_TASK
+DEFINE_PER_TASK(struct thread_info, ti);
+#endif
+
 DEFINE_PER_TASK(struct sched_dl_entity, dl);
 
 /*

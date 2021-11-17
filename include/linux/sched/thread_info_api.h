@@ -4,6 +4,7 @@
 
 #include <linux/sched.h>
 #include <linux/sched/thread_info_api_lowlevel.h>
+#include <linux/sched/per_task.h>
 
 union thread_union {
 #ifndef CONFIG_ARCH_TASK_STRUCT_ON_STACK
@@ -22,7 +23,10 @@ extern struct thread_info init_thread_info;
 extern unsigned long init_stack[THREAD_SIZE / sizeof(unsigned long)];
 
 #ifdef CONFIG_THREAD_INFO_IN_TASK
-# define task_thread_info(task)	(&(task)->thread_info)
+
+DECLARE_PER_TASK(struct thread_info, ti);
+
+# define task_thread_info(task) (&per_task(task, ti))
 #elif !defined(__HAVE_THREAD_FUNCTIONS)
 # define task_thread_info(task)	((struct thread_info *)per_task(task, stack))
 #endif

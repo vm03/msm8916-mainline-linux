@@ -69,7 +69,6 @@ struct task_struct init_task
 	__aligned(L1_CACHE_BYTES)
 = {
 #ifdef CONFIG_THREAD_INFO_IN_TASK
-	.thread_info	= INIT_THREAD_INFO(init_task),
 	.stack_refcount	= REFCOUNT_INIT(1),
 #endif
 	.__state	= 0,
