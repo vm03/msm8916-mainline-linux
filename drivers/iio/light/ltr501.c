@@ -165,6 +165,7 @@ struct ltr501_data {
 	struct regmap_field *reg_ps_rate;
 	struct regmap_field *reg_als_prst;
 	struct regmap_field *reg_ps_prst;
+	uint32_t near_level;
 };
 
 static const struct ltr501_samp_table ltr501_als_samp_table[] = {
@@ -524,6 +525,25 @@ static int ltr501_write_intr_prst(struct ltr501_data *data,
 	return -EINVAL;
 }
 
+static ssize_t ltr501_read_near_level(struct iio_dev *indio_dev,
+				      uintptr_t priv,
+				      const struct iio_chan_spec *chan,
+				      char *buf)
+{
+	struct ltr501_data *data = iio_priv(indio_dev);
+
+	return sprintf(buf, "%u\n", data->near_level);
+}
+
+static const struct iio_chan_spec_ext_info ltr501_ext_info[] = {
+	{
+		.name = "nearlevel",
+		.shared = IIO_SEPARATE,
+		.read = ltr501_read_near_level,
+	},
+	{ /* sentinel */ }
+};
+
 static const struct iio_event_spec ltr501_als_event_spec[] = {
 	{
 		.type = IIO_EV_TYPE_THRESH,
@@ -608,6 +628,7 @@ static const struct iio_chan_spec ltr501_channels[] = {
 		},
 		.event_spec = ltr501_pxs_event_spec,
 		.num_event_specs = ARRAY_SIZE(ltr501_pxs_event_spec),
+		.ext_info = ltr501_ext_info,
 	},
 	IIO_CHAN_SOFT_TIMESTAMP(3),
 };
@@ -1517,6 +1538,10 @@ static int ltr501_probe(struct i2c_client *client,
 
 	if ((partid >> 4) != data->chip_info->partid)
 		return -ENODEV;
+
+	if (device_property_read_u32(&client->dev, "proximity-near-level",
+				     &data->near_level))
+		data->near_level = 0;
 
 	indio_dev->info = data->chip_info->info;
 	indio_dev->channels = data->chip_info->channels;
