@@ -5,6 +5,7 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
+#include <linux/gfp_api.h>
 #include <linux/arm_ffa.h>
 #include <linux/errno.h>
 #include <linux/scatterlist.h>
