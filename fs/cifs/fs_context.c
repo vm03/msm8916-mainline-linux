@@ -7,6 +7,7 @@
  */
 
 /*
+#include <linux/syscalls_api.h>
 #include <linux/module.h>
 #include <linux/nsproxy.h>
 #include <linux/slab.h>
