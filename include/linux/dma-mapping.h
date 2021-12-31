@@ -4,8 +4,8 @@
 
 #include <linux/sizes.h>
 #include <linux/string.h>
-#include <linux/device_types.h>
-#include <linux/gfp_types.h>
+#include <linux/device.h>
+#include <linux/gfp.h>
 #include <linux/minmax.h>
 #include <linux/limits.h>
 #include <linux/err.h>
@@ -584,3 +584,8 @@ static inline int dma_mmap_wc(struct device *dev,
 #endif
 
 #endif /* _LINUX_DMA_MAPPING_H */
+
+#ifndef CONFIG_FAST_HEADERS
+# include <linux/device.h>
+# include <linux/mem_encrypt.h>
+#endif
