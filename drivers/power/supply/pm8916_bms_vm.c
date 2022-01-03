@@ -11,6 +11,7 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 #include <linux/interrupt.h>
+#include <linux/device_api_lock.h>
 
 #define PM8916_PERPH_TYPE 0x04
 #define PM8916_BMS_VM_TYPE 0x020D
