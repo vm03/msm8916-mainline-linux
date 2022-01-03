@@ -25,6 +25,13 @@
 #include <linux/regmap.h>
 #include <linux/regulator/driver.h>
 #include <linux/regulator/machine.h>
+#include <linux/property.h>
+#include <linux/device_api_lock.h>
+#include <linux/minmax.h>
+#include <linux/jiffies.h>
+#include <linux/workqueue_api.h>
+#include <linux/pm_wakeup.h>
+#include <linux/of_api.h>
 
 /* Charger Registers */
 #define CFG_BATT_CHG_REG		0x00
