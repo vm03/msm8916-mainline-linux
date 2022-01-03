@@ -4,6 +4,7 @@
 
 #include <linux/module.h>
 #include <linux/platform_device.h>
+#include <linux/of_api.h>
 #include <sound/soc.h>
 #include <dt-bindings/sound/qcom,q6voice.h>
 #include "q6voice.h"
