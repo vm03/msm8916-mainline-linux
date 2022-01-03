@@ -3,8 +3,13 @@
 
 #include <linux/module.h>
 #include <linux/slab.h>
-#include <linux/spinlock.h>
+#include <linux/spinlock_api.h>
+#include <linux/kref_api.h>
+#include <linux/jiffies.h>
 #include <linux/soc/qcom/apr.h>
+#include <linux/device_api_lock.h>
+#include <linux/wait_api.h>
+
 #include "q6voice-common.h"
 
 #define APRV2_IBASIC_CMD_DESTROY_SESSION	0x0001003C
