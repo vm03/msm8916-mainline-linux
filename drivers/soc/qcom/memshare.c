@@ -3,12 +3,14 @@
 #include <linux/kernel.h>
 #include <linux/types.h>
 #include <linux/module.h>
-#include <linux/of.h>
+#include <linux/slab.h>
+#include <linux/of_api.h>
 #include <linux/of_address.h>
 #include <linux/device.h>
 #include <linux/platform_device.h>
 #include <linux/net.h>
 #include <linux/soc/qcom/qmi.h>
+#include <linux/device_api_lock.h>
 
 #include "memshare_qmi_msg.h"
 
