@@ -4,9 +4,11 @@
 
 #include <linux/device.h>
 #include <linux/module.h>
-#include <linux/mutex.h>
+#include <linux/mutex_api.h>
 #include <linux/slab.h>
-#include <linux/spinlock.h>
+#include <linux/spinlock_api.h>
+#include <linux/device_api_lock.h>
+
 #include "q6cvp.h"
 #include "q6cvs.h"
 #include "q6mvm.h"
