@@ -3,6 +3,8 @@
 #include <linux/gpio/consumer.h>
 #include <linux/module.h>
 #include <linux/regulator/consumer.h>
+#include <linux/of_api.h>
+#include <linux/property.h>
 #include <sound/soc.h>
 
 struct aw8738_priv {
