@@ -20,6 +20,8 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/regulator/consumer.h>
+#include <linux/property.h>
+#include <linux/of_api.h>
 
 #define HX852_COORD_SIZE(fingers)	((fingers) * sizeof(struct hx852_coord))
 #define HX852_WIDTH_SIZE(fingers)	ALIGN(fingers, 4)
