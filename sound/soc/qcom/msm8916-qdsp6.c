@@ -6,8 +6,8 @@
 #include <linux/device.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
-#include <linux/io.h>
-#include <linux/of.h>
+#include <linux/ioport.h>
+#include <linux/of_api.h>
 #include <linux/clk.h>
 #include <linux/platform_device.h>
 #include <sound/pcm.h>
