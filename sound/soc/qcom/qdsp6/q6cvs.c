@@ -2,8 +2,9 @@
 // Copyright (c) 2012-2017, The Linux Foundation. All rights reserved.
 // Copyright (c) 2020, Stephan Gerhold
 
+#include <linux/device/driver.h>
 #include <linux/module.h>
-#include <linux/of.h>
+#include <linux/of_api.h>
 #include <linux/soc/qcom/apr.h>
 #include "q6cvs.h"
 #include "q6voice-common.h"
