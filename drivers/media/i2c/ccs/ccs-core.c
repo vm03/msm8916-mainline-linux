@@ -13,6 +13,8 @@
  * Based on smia-sensor.c by Tuukka Toivonen <tuukkat76@gmail.com>
  */
 
+#define DEBUG
+
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/device.h>
@@ -1668,7 +1670,7 @@ static int ccs_power_on(struct device *dev)
 out_cci_addr_fail:
 	gpiod_set_value(sensor->reset, 1);
 	gpiod_set_value(sensor->xshutdown, 0);
-	clk_disable_unprepare(sensor->ext_clk);
+	//clk_disable_unprepare(sensor->ext_clk);
 
 out_xclk_fail:
 	regulator_bulk_disable(ARRAY_SIZE(ccs_regulators),
@@ -1696,7 +1698,7 @@ static int ccs_power_off(struct device *dev)
 
 	gpiod_set_value(sensor->reset, 1);
 	gpiod_set_value(sensor->xshutdown, 0);
-	clk_disable_unprepare(sensor->ext_clk);
+	//clk_disable_unprepare(sensor->ext_clk);
 	usleep_range(5000, 5000);
 	regulator_bulk_disable(ARRAY_SIZE(ccs_regulators),
 			       sensor->regulators);
@@ -3345,7 +3347,7 @@ static int ccs_probe(struct i2c_client *client)
 				dev_err(&client->dev,
 					"can't set clock freq, asked for %u but got %lu\n",
 					sensor->hwcfg.ext_clk, rate);
-				return -EINVAL;
+				//return -EINVAL;
 			}
 		} else {
 			sensor->hwcfg.ext_clk = clk_get_rate(sensor->ext_clk);
