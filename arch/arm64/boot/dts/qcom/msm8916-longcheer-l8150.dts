@@ -119,6 +119,55 @@
 		};
 	};
 
+	reg_cam_avdd: regualtor-cam-avdd {
+		compatible = "regulator-fixed";
+		regulator-name = "cam-avdd";
+
+		regulator-min-microvolt = <2800000>;
+		regulator-max-microvolt = <2800000>;
+
+		gpio = <&msmgpio 119 0>;
+		enable-active-high;
+		regulator-always-on;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&cam_avdd_pwr_en_default>;
+	};
+
+	reg_main_cam_dvdd: regualtor-main-cam-dvdd {
+		compatible = "regulator-fixed";
+		regulator-name = "main-cam-dvdd";
+
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+
+		vin-supply = <&pm8916_s4>;
+
+		gpio = <&msmgpio 118 0>;
+		enable-active-high;
+		regulator-always-on;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&main_cam_dvdd_pwr_en_default>;
+	};
+
+	reg_sub_cam_dvdd: regualtor-sub-cam-dvdd {
+		compatible = "regulator-fixed";
+		regulator-name = "sub-cam-dvdd";
+
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+
+		vin-supply = <&pm8916_s4>;
+
+		gpio = <&msmgpio 117 0>;
+		enable-active-high;
+		regulator-always-on;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&sub_cam_dvdd_pwr_en_default>;
+	};
+
 	reg_ctp: regulator-ctp {
 		compatible = "regulator-fixed";
 		regulator-name = "ctp";
@@ -286,6 +335,92 @@
 
 &blsp1_uart2 {
 	status = "okay";
+};
+
+&camss {
+	status = "okay";
+	ports {
+		port@0 {
+			reg = <0>;
+			csiphy0_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 1 2 3>;
+				remote-endpoint = <&s5k3m2_ep>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+			csiphy1_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 1>;
+				remote-endpoint = <&s5k5e2_ep>;
+			};
+		};
+	};
+};
+
+&cci {
+	status = "okay";
+};
+
+&cci_i2c0 {
+	camera_rear@11 {
+		compatible = "mipi-ccs-1.0", "mipi-css"; // s5k3m2 13mp
+		reg = <0x11>;
+
+		flash-leds = <&flash_led>;
+
+		//reset-gpios = <&msmgpio 35 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&camera_rear_default>;
+
+		clocks = <&gcc GCC_CAMSS_MCLK0_CLK>;
+		clock-names = "xclk";
+		clock-frequency = <23880000>;
+
+		vana-supply = <&reg_cam_avdd>;
+		vcore-supply = <&reg_main_cam_dvdd>;
+		vio-supply = <&pm8916_l6>;
+
+		port {
+			s5k3m2_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 1 2 3>;
+				remote-endpoint = <&csiphy0_ep>;
+				link-frequencies = /bits/ 64 <199200000 210000000 499200000>; // FIXME
+				bus-type = <4>; // CSI-2 D-PHY
+			};
+		};
+	};
+
+	camera_front@10 {
+		compatible = "mipi-ccs-1.0", "mipi-css"; // s5k5e2 5mp
+		reg = <0x10>;
+
+		reset-gpios = <&msmgpio 28 GPIO_ACTIVE_LOW>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&camera_front_default>;
+
+		clocks = <&gcc GCC_CAMSS_MCLK1_CLK>;
+		clock-names = "xclk";
+		clock-frequency = <23880000>;
+
+		vana-supply = <&reg_cam_avdd>;
+		vcore-supply = <&reg_sub_cam_dvdd>;
+		vio-supply = <&pm8916_l6>;
+
+		port {
+			s5k5e2_ep: endpoint {
+				clock-lanes = <1>;
+				data-lanes = <0 1>;
+				remote-endpoint = <&csiphy1_ep>;
+				link-frequencies = /bits/ 64 <89616000>, <140200000>, <179104275>; // FIXME
+				bus-type = <4>; // CSI-2 D-PHY
+			};
+		};
+	};
 };
 
 &dsi0 {
@@ -457,6 +592,7 @@
 	l10 {
 		regulator-min-microvolt = <2700000>;
 		regulator-max-microvolt = <2800000>;
+		regulator-always-on; // hack actuator voice coil
 	};
 
 	l11 {
@@ -511,12 +647,79 @@
 		bias-disable;
 	};
 
+	cam_avdd_pwr_en_default: cam_avdd_pwr_en_default {
+		pins = "gpio119";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	main_cam_dvdd_pwr_en_default: main_cam_dvdd_pwr_en_default {
+		pins = "gpio118";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	sub_cam_dvdd_pwr_en_default: sub_cam_dvdd_pwr_en_default {
+		pins = "gpio117";
+		function = "gpio";
+
+		drive-strength = <2>;
+		bias-disable;
+	};
+
 	camera_flash_default: camera-flash-default {
 		pins = "gpio31", "gpio32";
 		function = "gpio";
 
 		drive-strength = <2>;
 		bias-disable;
+	};
+
+	camera_front_default: camera-front-default {
+		rst {
+			pins = "gpio28";
+			function = "gpio";
+
+			drive-strength = <16>;
+			bias-disable;
+		};
+		pwdn {
+			pins = "gpio33";
+			function = "gpio";
+
+			drive-strength = <16>;
+			bias-disable;
+			output-high;
+		};
+		mclk1 {
+			pins = "gpio27";
+			function = "cam_mclk1";
+
+			drive-strength = <16>;
+			bias-disable;
+		};
+	};
+
+	camera_rear_default: camera-rear-default {
+		rst {
+			pins = "gpio35";
+			function = "gpio";
+
+			drive-strength = <16>;
+			bias-disable;
+			output-high;
+		};
+		mclk0 {
+			pins = "gpio26";
+			function = "cam_mclk0";
+
+			drive-strength = <16>;
+			bias-disable;
+		};
 	};
 
 	ctp_pwr_en_default: ctp-pwr-en-default {
