@@ -12,16 +12,20 @@
 #include <linux/firmware.h>
 #include <linux/interrupt.h>
 #include <linux/kernel.h>
+#include <linux/mfd/syscon.h>
 #include <linux/module.h>
 #include <linux/io.h>
+#include <linux/iopoll.h>
 #include <linux/of_address.h>
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
 #include <linux/pm_domain.h>
 #include <linux/pm_runtime.h>
 #include <linux/qcom_scm.h>
+#include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 #include <linux/remoteproc.h>
+#include <linux/reset.h>
 #include <linux/soc/qcom/mdt_loader.h>
 #include <linux/soc/qcom/smem.h>
 #include <linux/soc/qcom/smem_state.h>
@@ -54,6 +58,37 @@
 
 #define WCNSS_MAX_PDS			2
 
+#define WCNSS_PMU_COMMON_GDSCR				0x24
+#define WCNSS_PMU_COMMON_GDSCR_SW_COLLAPSE		BIT(0)
+
+#define WCNSS_PMU_COMMON_CPU_CBCR			0x30
+#define WCNSS_PMU_COMMON_CPU_CBCR_CLK_EN		BIT(0)
+#define WCNSS_PMU_COMMON_CPU_CLK_OFF			BIT(31)
+
+#define WCNSS_PMU_COMMON_AHB_CBCR			0x34
+#define WCNSS_PMU_COMMON_AHB_CBCR_CLK_EN		BIT(0)
+#define WCNSS_PMU_COMMON_AHB_CLK_OFF			BIT(31)
+
+#define WCNSS_PMU_COMMON_CSR				0x1040
+#define WCNSS_PMU_COMMON_CSR_A2XB_CFG_EN		BIT(0)
+
+#define WCNSS_PMU_SOFT_RESET				0x104C
+#define WCNSS_PMU_SOFT_RESET_CRCM_CCPU_SOFT_RESET	BIT(10)
+
+#define WCNSS_PMU_CCPU_CTL				0x2000
+#define WCNSS_PMU_CCPU_CTL_REMAP_EN			BIT(2)
+#define WCNSS_PMU_CCPU_CTL_HIGH_IVT			BIT(0)
+
+#define WCNSS_PMU_CCPU_BOOT_REMAP_ADDR			0x2004
+#define WCNSS_CCPU_BOOT_REMAP_SHIFT			16	/* 64 KiB */
+
+#define AXI_HALTREQ_REG					0x0
+#define AXI_HALTACK_REG					0x4
+#define AXI_IDLE_REG					0x8
+
+#define HALT_ACK_TIMEOUT_US				500000
+#define CLK_UPDATE_TIMEOUT_US				500000
+
 struct wcnss_data {
 	size_t pmu_offset;
 	size_t spare_offset;
@@ -67,8 +102,12 @@ struct qcom_wcnss {
 	struct device *dev;
 	struct rproc *rproc;
 
+	void __iomem *pmu_base;
 	void __iomem *pmu_cfg;
 	void __iomem *spare_out;
+
+	struct regmap *halt_map;
+	u32 halt_wcss;
 
 	bool use_48mhz_xo;
 
@@ -99,6 +138,8 @@ struct qcom_wcnss {
 
 	struct qcom_rproc_subdev smd_subdev;
 	struct qcom_sysmon *sysmon;
+
+	struct reset_control *reset;
 };
 
 static const struct wcnss_data riva_data = {
@@ -146,9 +187,17 @@ static int wcnss_load(struct rproc *rproc, const struct firmware *fw)
 	struct qcom_wcnss *wcnss = (struct qcom_wcnss *)rproc->priv;
 	int ret;
 
-	ret = qcom_mdt_load(wcnss->dev, fw, rproc->firmware, WCNSS_PAS_ID,
-			    wcnss->mem_region, wcnss->mem_phys,
-			    wcnss->mem_size, &wcnss->mem_reloc);
+	if (wcnss->reset) {
+		ret = qcom_mdt_load_no_init(wcnss->dev, fw, rproc->firmware,
+					    WCNSS_PAS_ID,
+					    wcnss->mem_region, wcnss->mem_phys,
+					    wcnss->mem_size, &wcnss->mem_reloc);
+	} else {
+		ret = qcom_mdt_load(wcnss->dev, fw, rproc->firmware,
+				    WCNSS_PAS_ID,
+				    wcnss->mem_region, wcnss->mem_phys,
+				    wcnss->mem_size, &wcnss->mem_reloc);
+	}
 	if (ret)
 		return ret;
 
@@ -214,6 +263,107 @@ static void wcnss_configure_iris(struct qcom_wcnss *wcnss)
 	msleep(20);
 }
 
+static int wcnss_reset_no_pas(struct qcom_wcnss *wcnss)
+{
+	phys_addr_t start_addr = wcnss->mem_phys;
+	void __iomem *base = wcnss->pmu_base;
+	u32 reg;
+	int ret;
+
+	if (start_addr & (BIT(WCNSS_CCPU_BOOT_REMAP_SHIFT) - 1)) {
+		dev_err(wcnss->dev, "start address not aligned to 64 KiB\n");
+		return -EINVAL;
+	}
+
+	ret = reset_control_deassert(wcnss->reset);
+	if (ret) {
+		dev_err(wcnss->dev, "reset deassert failed: %d\n", ret);
+		return ret;
+	}
+
+	/* Configure boot address */
+	writel(start_addr >> WCNSS_CCPU_BOOT_REMAP_SHIFT,
+	       base + WCNSS_PMU_CCPU_BOOT_REMAP_ADDR);
+
+	/* Use the high vector table */
+	reg = readl(base + WCNSS_PMU_CCPU_CTL);
+	reg |= WCNSS_PMU_CCPU_CTL_REMAP_EN | WCNSS_PMU_CCPU_CTL_HIGH_IVT;
+	writel(reg, base + WCNSS_PMU_CCPU_CTL);
+
+	/* Turn on AHB clock of common_ss */
+	reg = readl(base + WCNSS_PMU_COMMON_AHB_CBCR);
+	reg |= WCNSS_PMU_COMMON_AHB_CBCR_CLK_EN;
+	writel(reg, base + WCNSS_PMU_COMMON_AHB_CBCR);
+
+	/* Turn on CPU clock of common_ss */
+	reg = readl(base + WCNSS_PMU_COMMON_CPU_CBCR);
+	reg |= WCNSS_PMU_COMMON_CPU_CBCR_CLK_EN;
+	writel(reg, base + WCNSS_PMU_COMMON_CPU_CBCR);
+
+	/* Enable A2XB bridge */
+	reg = readl(base + WCNSS_PMU_COMMON_CSR);
+	reg |= WCNSS_PMU_COMMON_CSR_A2XB_CFG_EN;
+	writel(reg, base + WCNSS_PMU_COMMON_CSR);
+
+	/* Enable common_ss power */
+	reg = readl(base + WCNSS_PMU_COMMON_GDSCR);
+	reg &= ~WCNSS_PMU_COMMON_GDSCR_SW_COLLAPSE;
+	writel(reg, base + WCNSS_PMU_COMMON_GDSCR);
+
+	/* Wait for AHB clock to be on */
+	ret = readl_poll_timeout(base + WCNSS_PMU_COMMON_AHB_CBCR,
+				 reg, !(reg & WCNSS_PMU_COMMON_AHB_CLK_OFF),
+				 0, CLK_UPDATE_TIMEOUT_US);
+	if (ret) {
+		dev_err(wcnss->dev, "common ahb clk enable timeout\n");
+		return ret;
+	}
+
+	/* Wait for CPU clock to be on */
+	ret = readl_poll_timeout(base + WCNSS_PMU_COMMON_CPU_CBCR,
+				 reg, !(reg & WCNSS_PMU_COMMON_CPU_CLK_OFF),
+				 0, CLK_UPDATE_TIMEOUT_US);
+	if (ret) {
+		dev_err(wcnss->dev, "common cpu clk enable timeout\n");
+		return ret;
+	}
+
+	/* Deassert ARM9 software reset */
+	reg = readl(base + WCNSS_PMU_SOFT_RESET);
+	reg &= ~WCNSS_PMU_SOFT_RESET_CRCM_CCPU_SOFT_RESET;
+	writel(reg, base + WCNSS_PMU_SOFT_RESET);
+
+	return 0;
+}
+
+static int wcnss_shutdown_no_pas(struct qcom_wcnss *wcnss)
+{
+	unsigned int reg;
+	int ret;
+
+	/* Assert AXI halt request */
+	regmap_write(wcnss->halt_map, wcnss->halt_wcss + AXI_HALTREQ_REG, 1);
+	/* Wait for halt */
+	ret = regmap_read_poll_timeout(wcnss->halt_map, wcnss->halt_wcss + AXI_HALTACK_REG,
+				       reg, reg, 50, HALT_ACK_TIMEOUT_US);
+	if (ret)
+		dev_err(wcnss->dev, "Port halt timeout\n");
+
+	ret = regmap_read(wcnss->halt_map, wcnss->halt_wcss + AXI_IDLE_REG, &reg);
+	if (ret || !reg)
+		dev_err(wcnss->dev, "Port halt failed\n");
+
+	/* Clear halt request (port will remain halted until reset) */
+	regmap_write(wcnss->halt_map, wcnss->halt_wcss + AXI_HALTREQ_REG, 0);
+
+	ret = reset_control_reset(wcnss->reset);
+	if (ret) {
+		dev_err(wcnss->dev, "reset failed: %d\n", ret);
+		return ret;
+	}
+	return 0;
+}
+
 static int wcnss_start(struct rproc *rproc)
 {
 	struct qcom_wcnss *wcnss = (struct qcom_wcnss *)rproc->priv;
@@ -246,11 +396,20 @@ static int wcnss_start(struct rproc *rproc)
 	wcnss_indicate_nv_download(wcnss);
 	wcnss_configure_iris(wcnss);
 
-	ret = qcom_scm_pas_auth_and_reset(WCNSS_PAS_ID);
-	if (ret) {
-		dev_err(wcnss->dev,
-			"failed to authenticate image and release reset\n");
-		goto disable_iris;
+	if (wcnss->reset) {
+		ret = wcnss_reset_no_pas(wcnss);
+		if (ret) {
+			dev_err(wcnss->dev,
+				"failed to release WCNSS from reset: %d\n", ret);
+			goto disable_iris;
+		}
+	} else {
+		ret = qcom_scm_pas_auth_and_reset(WCNSS_PAS_ID);
+		if (ret) {
+			dev_err(wcnss->dev,
+				"failed to authenticate image and release reset\n");
+			goto disable_iris;
+		}
 	}
 
 	ret = wait_for_completion_timeout(&wcnss->start_done,
@@ -258,7 +417,10 @@ static int wcnss_start(struct rproc *rproc)
 	if (wcnss->ready_irq > 0 && ret == 0) {
 		/* We have a ready_irq, but it didn't fire in time. */
 		dev_err(wcnss->dev, "start timed out\n");
-		qcom_scm_pas_shutdown(WCNSS_PAS_ID);
+		if (wcnss->reset)
+			wcnss_shutdown_no_pas(wcnss);
+		else
+			qcom_scm_pas_shutdown(WCNSS_PAS_ID);
 		ret = -ETIMEDOUT;
 		goto disable_iris;
 	}
@@ -300,7 +462,10 @@ static int wcnss_stop(struct rproc *rproc)
 					    0);
 	}
 
-	ret = qcom_scm_pas_shutdown(WCNSS_PAS_ID);
+	if (wcnss->reset)
+		ret = wcnss_shutdown_no_pas(wcnss);
+	else
+		ret = qcom_scm_pas_shutdown(WCNSS_PAS_ID);
 	if (ret)
 		dev_err(wcnss->dev, "failed to shutdown: %d\n", ret);
 
@@ -522,6 +687,33 @@ static int wcnss_alloc_memory_region(struct qcom_wcnss *wcnss)
 	return 0;
 }
 
+static int wcnss_probe_no_pas(struct qcom_wcnss *wcnss)
+{
+	struct device *dev = wcnss->dev;
+	struct of_phandle_args args;
+	int ret;
+
+	wcnss->reset = devm_reset_control_get_exclusive(dev, NULL);
+	if (IS_ERR(wcnss->reset))
+		return dev_err_probe(dev, PTR_ERR(wcnss->reset),
+				     "failed to get reset\n");
+
+	ret = of_parse_phandle_with_fixed_args(dev->of_node, "qcom,halt-regs",
+					       1, 0, &args);
+	if (ret < 0) {
+		dev_err(dev, "failed to parse qcom,halt-regs\n");
+		return -EINVAL;
+	}
+
+	wcnss->halt_map = syscon_node_to_regmap(args.np);
+	of_node_put(args.np);
+	if (IS_ERR(wcnss->halt_map))
+		return PTR_ERR(wcnss->halt_map);
+
+	wcnss->halt_wcss = args.args[0];
+	return 0;
+}
+
 static int wcnss_probe(struct platform_device *pdev)
 {
 	const char *fw_name = WCNSS_FIRMWARE_NAME;
@@ -536,11 +728,6 @@ static int wcnss_probe(struct platform_device *pdev)
 
 	if (!qcom_scm_is_available())
 		return -EPROBE_DEFER;
-
-	if (!qcom_scm_pas_supported(WCNSS_PAS_ID)) {
-		dev_err(&pdev->dev, "PAS is not available for WCNSS\n");
-		return -ENXIO;
-	}
 
 	ret = of_property_read_string(pdev->dev.of_node, "firmware-name",
 				      &fw_name);
@@ -576,8 +763,15 @@ static int wcnss_probe(struct platform_device *pdev)
 	if (ret)
 		goto free_rproc;
 
+	wcnss->pmu_base = mmio;
 	wcnss->pmu_cfg = mmio + data->pmu_offset;
 	wcnss->spare_out = mmio + data->spare_offset;
+
+	if (!qcom_scm_pas_supported(WCNSS_PAS_ID)) {
+		ret = wcnss_probe_no_pas(wcnss);
+		if (ret)
+			goto free_rproc;
+	}
 
 	/*
 	 * We might need to fallback to regulators instead of power domains
