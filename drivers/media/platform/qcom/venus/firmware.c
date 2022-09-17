@@ -45,6 +45,7 @@ static void venus_reset_cpu(struct venus_core *core)
 		/* Bring XTSS out of reset */
 		writel(0, wrapper_base + WRAPPER_TZ_XTSS_SW_RESET);
 	} else {
+		writel(0x0, wrapper_base + WRAPPER_CLOCK_CONFIG);
 		writel(0x0, wrapper_base + WRAPPER_CPU_CGC_DIS);
 		writel(0x0, wrapper_base + WRAPPER_CPU_CLOCK_CONFIG);
 
