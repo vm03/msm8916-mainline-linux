@@ -253,6 +253,12 @@ static const struct of_device_id qcom_smmu_client_of_match[] __maybe_unused = {
 	{ .compatible = "qcom,sm8250-mdss" },
 	{ .compatible = "qcom,sdm845-mdss" },
 	{ .compatible = "qcom,sdm845-mss-pil" },
+
+	/* FIXME: Should set up IOMMU mappings for remoteprocs */
+	{ .compatible = "qcom,rpm-proc" },
+	{ .compatible = "qcom,pronto" },
+	{ .compatible = "qcom,wcnss-wlan" },
+	{ .compatible = "qcom,msm8916-mss-pil" },
 	{ }
 };
 
@@ -404,6 +410,11 @@ static const struct arm_smmu_impl qcom_adreno_smmu_impl = {
 	.tlb_sync = qcom_smmu_tlb_sync,
 };
 
+static const struct arm_smmu_impl qcom_msm8916_smmu_impl = {
+	.def_domain_type = qcom_smmu_def_domain_type,
+	.reset = arm_mmu500_reset,
+};
+
 static struct arm_smmu_device *qcom_smmu_create(struct arm_smmu_device *smmu,
 		const struct arm_smmu_impl *impl)
 {
@@ -473,6 +484,9 @@ struct arm_smmu_device *qcom_smmu_impl_init(struct arm_smmu_device *smmu)
 
 	if (of_match_node(qcom_smmu_impl_of_match, np))
 		return qcom_smmu_create(smmu, &qcom_smmu_impl);
+
+	if (of_device_is_compatible(np, "qcom,msm8916-smmu-500"))
+		smmu->impl = &qcom_msm8916_smmu_impl;
 
 	return smmu;
 }
