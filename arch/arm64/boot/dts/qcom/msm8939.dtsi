@@ -2161,10 +2161,10 @@
 		};
 	};
 
-	smd {
-		compatible = "qcom,smd";
+	rpm: remoteproc-rpm {
+		compatible = "qcom,msm8916-rpm-proc", "qcom,rpm-proc";
 
-		rpm {
+		smd-edge {
 			interrupts = <GIC_SPI 168 IRQ_TYPE_EDGE_RISING>;
 			qcom,ipc = <&apcs1_mbox 8 0>;
 			qcom,smd-edge = <15>;
