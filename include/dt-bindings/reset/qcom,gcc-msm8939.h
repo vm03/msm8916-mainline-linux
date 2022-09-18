@@ -106,5 +106,9 @@
 #define GCC_CAMSS_MCLK2_BCR		97
 #define GCC_CPP_TBU_BCR			98
 #define GCC_MDP_RT_TBU_BCR		99
+#define GCC_MSS_RESTART			100
+#define GCC_WCSS_RESTART		101
+#define GCC_VENUS_RESTART		102
+#define GCC_RPM_RESET                   103
 
 #endif
