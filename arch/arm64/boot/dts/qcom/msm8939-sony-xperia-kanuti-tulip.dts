@@ -342,7 +342,7 @@
 	};
 };
 
-&remoteproc_pronto {
+&pronto {
 	status = "okay";
 };
 

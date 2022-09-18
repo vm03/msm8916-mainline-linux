@@ -50,7 +50,7 @@
 			power-domain-names = "cpr";
 			qcom,acc = <&acc0>;
 			qcom,saw = <&saw0>;
-			cpu-idle-states = <&CPU_SPC>;
+			cpu-idle-states = <&CPU_SLEEP_0>;
 			clocks = <&apcs1_mbox>;
 			#cooling-cells = <2>;
 			L2_1: l2-cache@1 {
@@ -162,7 +162,7 @@
 		};
 
 		idle-states {
-			CPU_SPC: spc {
+			CPU_SLEEP_0: spc {
 				compatible ="qcom,idle-state-spc", "arm,idle-state";
 				entry-latency-us = <130>;
 				exit-latency-us = <150>;
@@ -1150,7 +1150,7 @@
 			#interrupt-cells = <1>;
 			ranges;
 
-			mdss_mdp: mdp@1a01000 {
+			mdp: mdp@1a01000 {
 				compatible = "qcom,mdp5";
 				reg = <0x01a01000 0x89000>;
 				reg-names = "mdp_phys";
@@ -1327,7 +1327,7 @@
 			};
 		};
 
-		gpu@1c00000 {
+		gpu: gpu@1c00000 {
 			compatible = "qcom,adreno-405.0", "qcom,adreno";
 			reg = <0x01c00000 0x10000>;
 			reg-names = "kgsl_3d0_reg_memory";
@@ -1483,7 +1483,7 @@
 			#interrupt-cells = <4>;
 		};
 
-		remoteproc_mss: remoteproc@4080000 {
+		mpss: remoteproc@4080000 {
 			compatible = "qcom,msm8916-mss-pil", "qcom,q6v5-pil";
 			reg = <0x04080000 0x100>,
 			      <0x04020000 0x040>;
@@ -2084,8 +2084,8 @@
 			};
 		};
 
-		remoteproc_pronto: remoteproc@a204000 {
-			compatible = "qcom,pronto-v2-pil";
+		pronto: remoteproc@a204000 {
+			compatible = "qcom,pronto-v2-pil", "qcom,pronto";
 			reg = <0x0a204000 0x2000>,
 			      <0x0a202000 0x1000>,
 			      <0x0a21b000 0x3000>;
@@ -2138,13 +2138,13 @@
 					compatible = "qcom,wcnss";
 					qcom,smd-channels = "WCNSS_CTRL";
 
-					qcom,mmio = <&remoteproc_pronto>;
+					qcom,mmio = <&pronto>;
 
 					bt {
 						compatible = "qcom,wcnss-bt";
 					};
 
-					wifi {
+					pronto_wlan: wifi {
 						compatible = "qcom,wcnss-wlan";
 
 						interrupts = <GIC_SPI 145 IRQ_TYPE_LEVEL_HIGH>,
