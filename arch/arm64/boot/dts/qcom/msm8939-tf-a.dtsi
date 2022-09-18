@@ -1,0 +1,143 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// Copyright (C) 2022 Stephan Gerhold
+
+/* FIXME: Dummy node to make msm8916-tf-a.dtsi happy */
+/ { /omit-if-no-ref/ camss: camss {}; };
+
+#include "msm8916-tf-a.dtsi"
+
+/ {
+	psci {
+		compatible = "arm,psci-1.0";
+		method = "smc";
+	};
+};
+
+&cpu0 {
+	enable-method = "psci";
+	cpu-idle-states = <&CPU_SLEEP_0>;
+};
+&cpu1 {
+	enable-method = "psci";
+	cpu-idle-states = <&CPU_SLEEP_0>;
+};
+&cpu2 {
+	enable-method = "psci";
+	cpu-idle-states = <&CPU_SLEEP_0>;
+};
+&cpu3 {
+	enable-method = "psci";
+	cpu-idle-states = <&CPU_SLEEP_0>;
+};
+&cpu4 {
+	enable-method = "psci";
+	cpu-idle-states = <&CPU_SLEEP_0>;
+};
+&cpu5 {
+	enable-method = "psci";
+	cpu-idle-states = <&CPU_SLEEP_0>;
+};
+&cpu6 {
+	enable-method = "psci";
+	cpu-idle-states = <&CPU_SLEEP_0>;
+};
+&cpu7 {
+	enable-method = "psci";
+	cpu-idle-states = <&CPU_SLEEP_0>;
+};
+
+/* CPU power management hardware is reserved by the PSCI firmware */
+&acc0 {
+	status = "reserved";
+};
+&saw0 {
+	status = "reserved";
+};
+&acc1 {
+	status = "reserved";
+};
+&saw1 {
+	status = "reserved";
+};
+&acc2 {
+	status = "reserved";
+};
+&saw2 {
+	status = "reserved";
+};
+&acc3 {
+	status = "reserved";
+};
+&saw3 {
+	status = "reserved";
+};
+&acc4 {
+	status = "reserved";
+};
+&saw4 {
+	status = "reserved";
+};
+&acc5 {
+	status = "reserved";
+};
+&saw5 {
+	status = "reserved";
+};
+&acc6 {
+	status = "reserved";
+};
+&saw6 {
+	status = "reserved";
+};
+&acc7 {
+	status = "reserved";
+};
+&saw7 {
+	status = "reserved";
+};
+
+&apps_smmu {
+	/* MSM8939 has dedicated interrupts for all context banks */
+	interrupts =
+		<GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 254 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 255 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 76 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 118 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 119 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>,
+		<GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>;
+};
+
+&gpu_smmu {
+	/* Need to enable TBU clock during TLB operations */
+	clocks = <&gcc GCC_SMMU_CFG_CLK>,
+		 <&gcc GCC_GFX_TCU_CLK>,
+		 <&gcc GCC_GFX_TBU_CLK>;
+	clock-names = "iface", "bus", "tlb";
+};

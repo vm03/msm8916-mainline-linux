@@ -1,0 +1,225 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// Copyright (C) 2021 Stephan Gerhold
+
+&CPU_SLEEP_0 {
+	arm,psci-suspend-param = <0x40000003>;
+};
+
+/*
+ * Qualcomm's TZ implementation has a strange configuration of the SMMUs where
+ * most of the registers are inaccessible from the non-secure world. The TF-A
+ * port gives Linux full access to the SMMUs, so the standard arm-smmu binding
+ * can be used instead of the Qualcomm-specific msm-iommu-v1.
+ */
+/delete-node/ &apps_iommu;
+/delete-node/ &gpu_iommu;
+
+&soc {
+	apps_smmu: iommu@1e00000 {
+		compatible = "qcom,msm8916-smmu-500", "arm,mmu-500", "arm,smmu-v2";
+		reg = <0x01e00000 0x40000>;
+
+		/*
+		 * The APPS SMMU has a special "interrupt aggregation logic"
+		 * on MSM8916 that allows routing the CB interrupts to one of
+		 * 3 interrupts (intended for TZ/HYP/NS). The TF-A port routes
+		 * all of them to the non-secure interrupt by default (SPI 70).
+		 */
+		#global-interrupts = <1>;
+		interrupts =
+			<GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+
+		clocks = <&gcc GCC_APSS_TCU_CLK>,
+			 <&gcc GCC_SMMU_CFG_CLK>;
+		clock-names = "bus", "iface";
+		#iommu-cells = <1>;
+		dma-coherent;
+		stream-match-mask = <0x3f>;
+	};
+
+	gpu_smmu: iommu@1f00000 {
+		compatible = "qcom,msm8916-smmu-500", "arm,mmu-500", "arm,smmu-v2";
+		reg = <0x01f00000 0x10000>;
+		#global-interrupts = <1>;
+		interrupts =
+			<GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 240 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 241 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 242 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 245 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&gcc GCC_GFX_TCU_CLK>,
+			 <&gcc GCC_SMMU_CFG_CLK>;
+		clock-names = "bus", "iface";
+		#iommu-cells = <1>;
+		dma-coherent;
+	};
+};
+
+/*
+ * With Qualcomm's firmware the IOMMU stays in bypass mode after the operating
+ * system has started. When using the ARM SMMU driver the IOMMU bypass is
+ * disabled during startup, so all all components in the SoC must be assigned
+ * the correct IOMMU to allow memory access.
+ */
+
+&blsp_dma {
+	/* Hangs during boot if this is disabled for some reason */
+	status = "okay";
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_i2c1 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_i2c2 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_i2c3 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_i2c4 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_i2c5 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_i2c6 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_spi1 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_spi2 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_spi3 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_spi4 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_spi5 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp_spi6 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp1_uart1 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&blsp1_uart2 {
+	iommus = <&apps_smmu 0x0280>;
+};
+
+&camss {
+	iommus = <&apps_smmu 0x0400>;
+};
+
+&gpu {
+	iommus = <&gpu_smmu 0>, <&gpu_smmu 1>;
+};
+
+&lpass {
+	iommus = <&apps_smmu 0x01c0>;
+};
+
+&mdp {
+	iommus = <&apps_smmu 0x0c00>;
+};
+
+&mpss {
+	resets = <&gcc GCC_MSS_RESTART>;
+	iommus = <&apps_smmu 0x1000>;
+};
+
+&pm8916_rtc {
+	/* The TF-A port does not restrict access to the PM8916 RTC */
+	allow-set-time;
+};
+
+&pronto {
+	resets = <&gcc GCC_WCSS_RESTART>;
+	qcom,halt-regs = <&tcsr 0x1b000>;
+	iommus = <&apps_smmu 0x1c00>;
+};
+
+&pronto_wlan {
+	iommus = <&apps_smmu 0x1c00>;
+};
+
+&rpm {
+	/*
+	 * Unlike with Qualcomm's original firmware the RPM processor is not
+	 * started early during the boot process. The operating system is
+	 * responsible for that because it is in full control of the SMMU.
+	 * Starting the RPM firmware early would lead to crashes if the SMMU
+	 * temporarily blocks all memory accesses made by the RPM (while it
+	 * is being reconfigured by the operating system).
+	 */
+	resets = <&gcc GCC_RPM_RESET>;
+	iommus = <&apps_smmu 0x0040>;
+};
+
+&sdhc_1 {
+	iommus = <&apps_smmu 0x0100>;
+};
+
+&sdhc_2 {
+	iommus = <&apps_smmu 0x0140>;
+};
+
+&usb {
+	iommus = <&apps_smmu 0x02c0>;
+};
+
+&venus {
+	iommus = <&apps_smmu 0x0800>;
+	video-firmware {
+		iommus = <&apps_smmu 0x08c0>;
+	};
+};

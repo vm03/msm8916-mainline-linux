@@ -4,6 +4,7 @@
 
 #include "msm8939.dtsi"
 #include "pm8916.dtsi"
+#include "msm8939-tf-a.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 
 / {
