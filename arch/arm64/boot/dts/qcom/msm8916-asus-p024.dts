@@ -7,6 +7,7 @@
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/power/summit,smb347-charger.h>
 
 / {
 	model = "ASUS ZenPad 8.0";
@@ -19,6 +20,24 @@
 
 	chosen {
 		stdout-path = "serial0";
+	};
+
+	bat: battery {
+		compatible = "simple-battery";
+		voltage-min-design-microvolt = <3400000>;
+		voltage-max-design-microvolt = <4350000>;
+		energy-full-design-microwatt-hours = <15200000>;
+		charge-full-design-microamp-hours = <3800000>;
+
+		ocv-capacity-celsius = <25>;
+		ocv-capacity-table-0 = <4331000 100>, <4261000 95>, <4204000 90>,
+			<4152000 85>, <4102000 80>, <4060000 75>, <3998000 70>,
+			<3964000 65>, <3924000 60>, <3874000 55>, <3842000 50>,
+			<3820000 45>, <3800000 40>, <3785000 35>, <3720000 30>,
+			<3758000 25>, <3735000 20>, <3706000 16>, <3690000 13>,
+			<3687000 11>, <3686000 10>, <3684000 9>, <3680000 8>,
+			<3668000 7>, <3640000 6>, <3596000 5>, <3542000 4>,
+			<3472000 3>, <3378000 2>, <3239000 1>, <3000000 0>;
 	};
 
 	gpio-keys {
@@ -60,11 +79,31 @@
 	};
 };
 
+&blsp_i2c4 {
+	status = "okay";
+
+	charger@6a {
+		compatible = "summit,smb345";
+		reg = <0x6a>;
+
+		summit,enable-charge-control = <SMB3XX_CHG_ENABLE_SW>;
+		summit,chip-temperature-threshold-celsius = <110>;
+		summit,usb-current-limit-microamp = <500000>;
+		summit,enable-usb-charging;
+		summit,enable-otg-charging;
+	};
+};
+
 &blsp1_uart2 {
 	status = "okay";
 };
 
 &pronto {
+	status = "okay";
+};
+
+&pm8916_bms {
+	monitored-battery = <&bat>;
 	status = "okay";
 };
 
