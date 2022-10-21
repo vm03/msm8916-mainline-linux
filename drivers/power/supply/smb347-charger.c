@@ -1180,6 +1180,40 @@ static int smb347_get_property(struct power_supply *psy,
 	return ret;
 }
 
+static inline int smb347_set_online (struct smb347_charger *smb,
+				     const union power_supply_propval *val)
+{
+	return smb347_charging_set(smb, val->intval);
+}
+
+static int smb347_set_property(struct power_supply *psy,
+				       enum power_supply_property psp,
+				       const union power_supply_propval *val)
+{
+	struct smb347_charger *smb = power_supply_get_drvdata(psy);
+	int ret;
+
+	switch (psp) {
+	case POWER_SUPPLY_PROP_ONLINE:
+		ret = smb347_set_online(smb, val);
+		break;
+	default:
+		ret = -EINVAL;
+	}
+	return ret;
+}
+
+static int smb347_property_is_writeable(struct power_supply *psy,
+				       enum power_supply_property psp)
+{
+	switch (psp) {
+	case POWER_SUPPLY_PROP_ONLINE:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 static enum power_supply_property smb347_properties[] = {
 	POWER_SUPPLY_PROP_STATUS,
 	POWER_SUPPLY_PROP_CHARGE_TYPE,
@@ -1511,6 +1545,8 @@ static const struct power_supply_desc smb347_usb_desc = {
 	.name		= "smb347-usb",
 	.type		= POWER_SUPPLY_TYPE_USB,
 	.get_property	= smb347_get_property,
+	.set_property	= smb347_set_property,
+	.property_is_writeable = smb347_property_is_writeable,
 	.properties	= smb347_properties,
 	.num_properties	= ARRAY_SIZE(smb347_properties),
 };
