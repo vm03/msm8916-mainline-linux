@@ -117,15 +117,10 @@
 	pinctrl-1 = <&mdss_sleep>;
 
 	panel@0 {
-		compatible = "asus,z00l-panel";
+		compatible = "asus,p024-rm27013";
 		reg = <0>;
 
 		reset-gpios = <&msmgpio 25 GPIO_ACTIVE_LOW>;
-		backlight-gpios = <&msmgpio 21 GPIO_ACTIVE_HIGH>;
-		power-supply = <&pm8916_l8>;
-
-		pinctrl-names = "default";
-		pinctrl-0 = <&lcd_bl_en_default>;
 
 		port {
 			panel_in: endpoint {
